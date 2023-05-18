@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
 
@@ -22,7 +23,8 @@ namespace PetShop.Controllers
 
         // GET: api/users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
             var users = await _dbContext.Users.ToListAsync();
             return Ok(users);
@@ -30,7 +32,10 @@ namespace PetShop.Controllers
 
         // GET: api/users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);
 
@@ -44,7 +49,9 @@ namespace PetShop.Controllers
 
         // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UserDTO>> CreateUser(User user)
         {
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
@@ -54,7 +61,9 @@ namespace PetShop.Controllers
 
         // PUT: api/users/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateUser(int id, UserDTO user)
         {
             if (id != user.UserID)
             {
@@ -84,6 +93,9 @@ namespace PetShop.Controllers
 
         // DELETE: api/users/5
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _dbContext.Users.FindAsync(id);

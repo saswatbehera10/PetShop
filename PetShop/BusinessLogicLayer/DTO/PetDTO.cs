@@ -1,22 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PetShop.DataAccessLayer.Entities;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetShop.BusinessLogicLayer.DTO
 {
     public class PetDTO
     {
+        [Key]
         public int PetID { get; set; }
 
-        [Required(ErrorMessage ="The Name field is required.")]
+        [Required]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "The Species field is required.")]
+        [Required]
         public string Species { get; set; }
 
-        [Required(ErrorMessage = "The Price field is required.")]
-        [Range(0.01, double.MaxValue, ErrorMessage ="The price field must be greater than 0.")]
+        [Required]
+        public int Age { get; set; }
+
+        [Required]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "The UserId field is required.")]
+        [ForeignKey("User")]
         public int UserID { get; set; }
     }
 }

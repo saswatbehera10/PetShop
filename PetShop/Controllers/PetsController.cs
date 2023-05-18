@@ -24,7 +24,7 @@ namespace PetShop.Controllers
         // GET: api/pets
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Pet>>> GetPets()
+        public async Task<ActionResult<IEnumerable<PetDTO>>> GetPets()
         {
             var pets = await _dbContext.Pets.ToListAsync();
             return Ok(pets);
@@ -35,7 +35,7 @@ namespace PetShop.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Pet>> GetPet(int id)
+        public async Task<ActionResult<PetDTO>> GetPet(int id)
         {
             var pet = await _dbContext.Pets.FindAsync(id);
 
@@ -49,8 +49,24 @@ namespace PetShop.Controllers
 
         // POST: api/pets
         [HttpPost]
-        public async Task<ActionResult<Pet>> CreatePet([FromBody]Pet pet)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PetDTO>> CreatePet([FromBody]PetDTO petDTO)
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var pet = new Pet
+            {
+                Name = petDTO.Name,
+                Species = petDTO.Species,
+                Age = petDTO.Age,
+                Price = petDTO.Price,
+                UserID = petDTO.UserID
+            };
+
             _dbContext.Pets.Add(pet);
             await _dbContext.SaveChangesAsync();
 
@@ -61,30 +77,32 @@ namespace PetShop.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePet(int id, Pet pet)
+        public async Task<IActionResult> UpdatePet(int id,[FromBody] PetDTO petDTO)
         {
-            if (id != pet.PetID)
+            if (id != petDTO.PetID)
             {
-                return BadRequest();
+                return BadRequest("Pet ID mismatch");
             }
 
-            _dbContext.Entry(pet).State = EntityState.Modified;
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            try
+            var pet = await _dbContext.Pets.FindAsync(id);
+
+            if (pet == null)
             {
-                await _dbContext.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PetExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            pet.Name = petDTO.Name;
+            pet.Species = petDTO.Species;
+            pet.Age = petDTO.Age;
+            pet.Price = petDTO.Price;
+            pet.UserID = petDTO.UserID;
+
+            await _dbContext.SaveChangesAsync();
 
             return NoContent();
         }
