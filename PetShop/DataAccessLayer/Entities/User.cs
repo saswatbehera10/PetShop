@@ -4,11 +4,6 @@ using System.Data;
 
 namespace PetShop.DataAccessLayer.Entities
 {
-    public enum UserType
-    {
-        Admin,
-        Customer
-    }
     public class User
     {
         [Key]
@@ -24,9 +19,6 @@ namespace PetShop.DataAccessLayer.Entities
         [Required]
         [Phone]
         public string Phone { get; set; }
-
-        [Required]
-        public UserType UserType { get; set; }
 
         public virtual ICollection<Pet> Pets { get; set; }
 

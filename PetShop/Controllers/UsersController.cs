@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
@@ -15,10 +16,12 @@ namespace PetShop.Controllers
             return View();
         }*/
         private readonly PetShopDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        public UsersController(PetShopDbContext dbContext)
+        public UsersController(PetShopDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
         // GET: api/users
@@ -27,7 +30,7 @@ namespace PetShop.Controllers
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
             var users = await _dbContext.Users.ToListAsync();
-            return Ok(users);
+            return Ok(users.Select(user => _mapper.Map<UserDTO>(user)));
         }
 
         // GET: api/users/5
@@ -43,52 +46,27 @@ namespace PetShop.Controllers
             {
                 return NotFound();
             }
-
-            return Ok(user);
+            var petDTO = _mapper.Map<UserDTO>(user);
+            return Ok(petDTO);
         }
 
-        // POST: api/users
+        // POST: api/user
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserDTO>> CreateUser(User user)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDTO>> CreateUser(UserDTO userCreateDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = _mapper.Map<User>(userCreateDTO);
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.UserID }, user);
-        }
-
-        // PUT: api/users/5
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdateUser(int id, UserDTO user)
-        {
-            if (id != user.UserID)
-            {
-                return BadRequest();
-            }
-
-            _dbContext.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _dbContext.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            var userDTO = _mapper.Map<UserDTO>(user);
+            return CreatedAtAction(nameof(GetUser), new { id = userDTO.UserID }, userDTO);
         }
 
         // DELETE: api/users/5
@@ -108,11 +86,6 @@ namespace PetShop.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return _dbContext.Users.Any(u => u.UserID == id);
         }
     }
 }

@@ -4,11 +4,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PetShop.BusinessLogicLayer.DTO
 {
-    public enum UserType
-    {
-        Admin,
-        Customer
-    }
     public class UserDTO
     {
         [Key]
@@ -24,11 +19,6 @@ namespace PetShop.BusinessLogicLayer.DTO
         [Required]
         [Phone]
         public string Phone { get; set; }
-
-        [Required]
-        public UserType UserType { get; set; }
-
-        //public virtual ICollection<Pet> Pets { get; set; }
 
         [ForeignKey("Role")]
         public int RoleID { get; set; }

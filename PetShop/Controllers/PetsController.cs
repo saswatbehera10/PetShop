@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
@@ -15,10 +16,11 @@ namespace PetShop.Controllers
             return View();
         }*/
         private readonly PetShopDbContext _dbContext;
-
-        public PetsController(PetShopDbContext dbContext)
+        private readonly IMapper _mapper;
+        public PetsController(PetShopDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
         }
 
         // GET: api/pets
@@ -27,7 +29,8 @@ namespace PetShop.Controllers
         public async Task<ActionResult<IEnumerable<PetDTO>>> GetPets()
         {
             var pets = await _dbContext.Pets.ToListAsync();
-            return Ok(pets);
+            //return Ok(pets);
+            return Ok(pets.Select(pet => _mapper.Map<PetDTO>(pet)));
         }
 
         // GET: api/pets/5
@@ -43,43 +46,36 @@ namespace PetShop.Controllers
             {
                 return NotFound();
             }
-
-            return Ok(pet);
+            var petDTO = _mapper.Map<PetDTO>(pet);
+            return Ok(petDTO);
         }
 
         // POST: api/pets
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PetDTO>> CreatePet([FromBody]PetDTO petDTO)
+        public async Task<ActionResult<PetDTO>> CreatePet(PetDTO petCreateDTO)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var pet = new Pet
-            {
-                Name = petDTO.Name,
-                Species = petDTO.Species,
-                Age = petDTO.Age,
-                Price = petDTO.Price,
-                UserID = petDTO.UserID
-            };
-
+            var pet = _mapper.Map<Pet>(petCreateDTO);
             _dbContext.Pets.Add(pet);
             await _dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetPet), new { id = pet.PetID }, pet);
+            var petDTO = _mapper.Map<PetDTO>(pet);
+            return CreatedAtAction(nameof(GetPet), new { id = petDTO.PetID }, petDTO);
         }
 
         // PUT: api/pets/5
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePet(int id,[FromBody] PetDTO petDTO)
+        public async Task<IActionResult> UpdatePet(int id, PetDTO petUpdateDTO)
         {
-            if (id != petDTO.PetID)
+            if (id != petUpdateDTO.PetID)
             {
                 return BadRequest("Pet ID mismatch");
             }
@@ -96,12 +92,7 @@ namespace PetShop.Controllers
                 return NotFound();
             }
 
-            pet.Name = petDTO.Name;
-            pet.Species = petDTO.Species;
-            pet.Age = petDTO.Age;
-            pet.Price = petDTO.Price;
-            pet.UserID = petDTO.UserID;
-
+            _mapper.Map(petUpdateDTO, pet);
             await _dbContext.SaveChangesAsync();
 
             return NoContent();

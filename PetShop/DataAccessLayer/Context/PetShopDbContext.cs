@@ -66,7 +66,6 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "Alex",
                     Email = "alex@gmail.com",
                     Phone = "123",
-                    UserType = UserType.Admin,
                     RoleID = 1
                 },
                 new User()
@@ -75,7 +74,6 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "Adam",
                     Email = "adamx@gmail.com",
                     Phone = "123",
-                    UserType = UserType.Customer,
                     RoleID = 2
                 },
                 new User()
@@ -84,7 +82,6 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "Cust",
                     Email = "cust@gmail.com",
                     Phone = "123",
-                    UserType = UserType.Customer,
                     RoleID = 2
                 });
 
