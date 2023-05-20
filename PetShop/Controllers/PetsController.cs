@@ -35,6 +35,7 @@ namespace PetShop.Controllers
 
         // GET: api/pets/5
         [HttpGet("{id}")]
+        //Response codes
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
