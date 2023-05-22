@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
@@ -8,6 +9,7 @@ using PetShop.DataAccessLayer.Entities;
 using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace PetShop.Controllers
@@ -48,45 +50,104 @@ namespace PetShop.Controllers
 
         }
 
-        /*[AllowAnonymous]
-        [HttpPost("login")]
-
-        public async Task<IActionResult> Login(UserDTO userDTO)
+        /*[HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDTO userLoginDTO)
         {
-            
-            var user = await _dbContext(userDTO.Email, userDTO.Password);
-            
+            var user = await _dbContext.Authenticate(userLoginDTO.Email, userLoginDTO.Password);
+
             if (user == null)
             {
-                return Unauthorized();
+                return Unauthorized("Invalid username or password");
             }
 
             var token = GenerateJwtToken(user);
 
-            return Ok(new { token });
+            return Ok(new { Token = token });
         }
+
         private string GenerateJwtToken(User user)
         {
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-                new Claim(ClaimTypes.Name, user.Name), 
-            };
-
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:JwtSecretKey").Value));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)
-            };
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            // Add additional claims as needed
+        };
+
+            var tokenOptions = new JwtSecurityToken(
+                issuer: _configuration.GetSection("AppSettings:JwtIssuer").Value,
+                audience: _configuration.GetSection("AppSettings:JwtAudience").Value,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: credentials
+            );
 
             var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.WriteToken(tokenOptions);
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
+            return token;
         }*/
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDTO userLoginDTO)
+        {
+            var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == userLoginDTO.Email);
+
+            if (user == null || !VerifyPasswordHash(userLoginDTO.Password, user.PasswordHash, user.PasswordSalt))
+            {
+                return Unauthorized("Invalid username or password");
+            }
+
+            var token = GenerateJwtToken(user);
+
+            return Ok(new { Token = token });
+        }
+
+        private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+        {
+            using (var hmac = new HMACSHA512(storedSalt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                for (int i = 0; i < computedHash.Length; i++)
+                {
+                    if (computedHash[i] != storedHash[i])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:JwtSecretKey").Value));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+            new Claim(ClaimTypes.Name, user.Email),
+            // Add additional claims as needed
+        };
+
+            var tokenOptions = new JwtSecurityToken(
+                issuer: _configuration.GetSection("AppSettings:JwtIssuer").Value,
+                audience: _configuration.GetSection("AppSettings:JwtAudience").Value,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: credentials
+            );
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.WriteToken(tokenOptions);
+
+            return token;
+        }
+
     }
 }
