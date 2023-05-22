@@ -65,6 +65,8 @@ namespace PetShop.DataAccessLayer.Context
                     UserID = 1,
                     Name = "Alex",
                     Email = "alex@gmail.com",
+                    Password = "password",
+                   // PasswordHash = "String",
                     Phone = "123",
                     RoleID = 1
                 },
@@ -73,6 +75,8 @@ namespace PetShop.DataAccessLayer.Context
                     UserID = 2,
                     Name = "Adam",
                     Email = "adamx@gmail.com",
+                    Password = "password",
+                    //PasswordHash = "String",
                     Phone = "123",
                     RoleID = 2
                 },
@@ -81,6 +85,8 @@ namespace PetShop.DataAccessLayer.Context
                     UserID = 3,
                     Name = "Cust",
                     Email = "cust@gmail.com",
+                    Password = "password",
+                   // PasswordHash = "String",
                     Phone = "123",
                     RoleID = 2
                 });

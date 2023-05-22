@@ -6,7 +6,7 @@ namespace PetShop.DataAccessLayer.Entities
     public class Order
     {
         [Key]
-        public int OrderID { get; set; }
+        public int OrderID { get; set; } 
 
         [Required]
         public DateTime OrderDate { get; set; }

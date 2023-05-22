@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetShop.DataAccessLayer.Context;
 
@@ -11,9 +12,10 @@ using PetShop.DataAccessLayer.Context;
 namespace PetShop.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    partial class PetShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230522043833_UserPassword")]
+    partial class UserPassword
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,10 +155,6 @@ namespace PetShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -177,7 +175,6 @@ namespace PetShop.Migrations
                             Email = "alex@gmail.com",
                             Name = "Alex",
                             Password = "password",
-                            PasswordHash = "String",
                             Phone = "123",
                             RoleID = 1
                         },
@@ -187,7 +184,6 @@ namespace PetShop.Migrations
                             Email = "adamx@gmail.com",
                             Name = "Adam",
                             Password = "password",
-                            PasswordHash = "String",
                             Phone = "123",
                             RoleID = 2
                         },
@@ -197,7 +193,6 @@ namespace PetShop.Migrations
                             Email = "cust@gmail.com",
                             Name = "Cust",
                             Password = "password",
-                            PasswordHash = "String",
                             Phone = "123",
                             RoleID = 2
                         });

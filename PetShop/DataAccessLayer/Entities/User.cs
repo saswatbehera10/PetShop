@@ -17,6 +17,10 @@ namespace PetShop.DataAccessLayer.Entities
         public string Email { get; set; }
 
         [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
+        [Required]
         [Phone]
         public string Phone { get; set; }
 
@@ -25,5 +29,6 @@ namespace PetShop.DataAccessLayer.Entities
         [ForeignKey("Role")]
         public int RoleID { get; set; }
         public virtual Role Role { get; set; }
+       // public string PasswordHash { get; internal set; }
     }
 }

@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using PetShop.BusinessLogicLayer.DTO;
+using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
+using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -12,96 +16,77 @@ namespace PetShop.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly PetShopDbContext _dbContext;
+        // private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
+       // private readonly IPasswordHasher _passwordHasher;
 
-        public AuthController(IUserService userService, IConfiguration configuration)
+        public AuthController(PetShopDbContext pedbcontext, IConfiguration configuration)
         {
-            _userService = userService;
+            _dbContext=pedbcontext;
+            //_userService = userService;
             _configuration = configuration;
+           // _passwordHasher = passwordHasher;
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserRegistrationDTO userDto)
+
+        public async Task<IActionResult> Register(UserRegisterDTO userRegisterDTO)
         {
-            // Validate user registration data
-
-            // Check if user with the provided email already exists
-            if (await _userService.UserExists(userDto.Email))
-            {
-                return BadRequest("User with the provided email already exists.");
-            }
-
-            // Create a new user entity from the DTO
             var user = new User
             {
-                Email = userDto.Email,
-                // Set other user properties
-                // ...
+                Name = userRegisterDTO.Name,
+                Email = userRegisterDTO.Email,
+                Password = userRegisterDTO.Password,
+                Phone = userRegisterDTO.Phone,
+                RoleID=2,
             };
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+            return Ok(user);
 
-            // Register the user
-            var registeredUser = await _userService.Register(user, userDto.Password);
-
-            // Return the registered user or a success message
-            return Ok(registeredUser);
         }
 
-        [AllowAnonymous]
+        /*[AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDTO userDto)
-        {
-            // Authenticate user
-            var authenticatedUser = await _userService.Authenticate(userDto.Email, userDto.Password);
 
-            // Check if authentication was successful
-            if (authenticatedUser == null)
+        public async Task<IActionResult> Login(UserDTO userDTO)
+        {
+            
+            var user = await _dbContext(userDTO.Email, userDTO.Password);
+            
+            if (user == null)
             {
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized();
             }
 
-            // Generate JWT token
-            var token = GenerateJwtToken(authenticatedUser);
+            var token = GenerateJwtToken(user);
 
-            // Return the token
-            return Ok(new { Token = token });
+            return Ok(new { token });
         }
-
-        [HttpGet("test")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult TestAdminAuthorization()
-        {
-            // This endpoint can only be accessed by users with the "Admin" role
-            return Ok("You have successfully accessed the admin-only endpoint.");
-        }
-
         private string GenerateJwtToken(User user)
         {
-            // Create claims for the user, including their ID, email, roles, etc.
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                // Add other claims like roles, permissions, etc.
-                // ...
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                new Claim(ClaimTypes.Name, user.Name), 
             };
 
-            // Get the secret key from configuration
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:JwtSecretKey").Value));
 
-            // Generate token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(Convert.ToDouble(_configuration["Jwt:TokenExpirationDays"])),
-                SigningCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256)
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature)
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
-        }
+        }*/
     }
 }
