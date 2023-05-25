@@ -6,7 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
-using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -19,16 +18,16 @@ namespace PetShop.Controllers
     public class AuthController : ControllerBase
     {
         private readonly PetShopDbContext _dbContext;
-        // private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
-       // private readonly IPasswordHasher _passwordHasher;
+        // private readonly IUserService _userService;
+        // private readonly IPasswordHasher _passwordHasher;
 
-        public AuthController(PetShopDbContext pedbcontext, IConfiguration configuration)
+        public AuthController(PetShopDbContext dbcontext, IConfiguration configuration)
         {
-            _dbContext=pedbcontext;
-            //_userService = userService;
+            _dbContext= dbcontext;
             _configuration = configuration;
-           // _passwordHasher = passwordHasher;
+            //_userService = userService;
+            // _passwordHasher = passwordHasher;
         }
 
         [AllowAnonymous]
@@ -50,14 +49,13 @@ namespace PetShop.Controllers
 
         }
 
-        /*[HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDTO userLoginDTO)
+        [HttpPost("login")]
+        public async Task<ActionResult<UserLoginDTO>> Login(UserLoginDTO userLoginDTO)
         {
-            var user = await _dbContext.Authenticate(userLoginDTO.Email, userLoginDTO.Password);
-
+            var user =  await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == userLoginDTO.Email && u.Password == userLoginDTO.Password);
             if (user == null)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized();
             }
 
             var token = GenerateJwtToken(user);
@@ -67,86 +65,12 @@ namespace PetShop.Controllers
 
         private string GenerateJwtToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:JwtSecretKey").Value));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            // Add additional claims as needed
-        };
-
-            var tokenOptions = new JwtSecurityToken(
-                issuer: _configuration.GetSection("AppSettings:JwtIssuer").Value,
-                audience: _configuration.GetSection("AppSettings:JwtAudience").Value,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: credentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.WriteToken(tokenOptions);
-
-            return token;
-        }*/
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(UserLoginDTO userLoginDTO)
-        {
-            var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == userLoginDTO.Email);
-
-            if (user == null || !VerifyPasswordHash(userLoginDTO.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return Unauthorized("Invalid username or password");
-            }
-
-            var token = GenerateJwtToken(user);
-
-            return Ok(new { Token = token });
-        }
-
-        private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-        {
-            using (var hmac = new HMACSHA512(storedSalt))
-            {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                for (int i = 0; i < computedHash.Length; i++)
-                {
-                    if (computedHash[i] != storedHash[i])
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:JwtSecretKey").Value));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-            new Claim(ClaimTypes.Name, user.Email),
-            // Add additional claims as needed
-        };
-
-            var tokenOptions = new JwtSecurityToken(
-                issuer: _configuration.GetSection("AppSettings:JwtIssuer").Value,
-                audience: _configuration.GetSection("AppSettings:JwtAudience").Value,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: credentials
-            );
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.WriteToken(tokenOptions);
-
-            return token;
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], null,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
     }

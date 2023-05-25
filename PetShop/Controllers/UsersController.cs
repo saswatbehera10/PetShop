@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
+using System.Data;
 
 namespace PetShop.Controllers
 {
@@ -26,7 +28,9 @@ namespace PetShop.Controllers
 
         // GET: api/users
         [HttpGet]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
             var users = await _dbContext.Users.ToListAsync();
@@ -35,6 +39,7 @@ namespace PetShop.Controllers
 
         // GET: api/users/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -71,6 +76,7 @@ namespace PetShop.Controllers
 
         // DELETE: api/users/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -23,8 +23,6 @@ namespace PetShop.DataAccessLayer.Entities
         [Required]
         [Phone]
         public string Phone { get; set; }
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
 
         public virtual ICollection<Pet> Pets { get; set; }
 
