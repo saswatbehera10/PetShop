@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using PetShop.DataAccessLayer.Context;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
+using PetShop.DataAccessLayer.Entities.Repository.Implementation;
 
 namespace PetShop
 {
@@ -18,14 +20,17 @@ namespace PetShop
             builder.Services.AddDbContext<PetShopDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddScoped<IPetRepo, PetRepo>();
+            builder.Services.AddScoped<IUserRepo, UserRepo>();
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                  {
                      options.TokenValidationParameters = new TokenValidationParameters
                      {
-                         ValidateIssuer = true,
-                         ValidateAudience = true,
-                         ValidateLifetime = true,
+                         ValidateIssuer = false,
+                         ValidateAudience = false,
+                         ValidateLifetime = false,
                          ValidIssuer = builder.Configuration["Jwt:Issuer"],
                          ValidAudience = builder.Configuration["Jwt:Audience"],
                          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
@@ -58,6 +63,12 @@ namespace PetShop
                         new string[] { }
                     }
                 });
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
             });
 
             builder.Services.AddControllers();

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
+using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using System.Data;
 
 namespace PetShop.Controllers
@@ -13,83 +14,85 @@ namespace PetShop.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
-        private readonly PetShopDbContext _dbContext;
-        private readonly IMapper _mapper;
+        private readonly IMapper mapper;
+        private readonly IUserRepo userRepo;
 
-        public UsersController(PetShopDbContext dbContext, IMapper mapper)
+        //Creating Constructor
+        public UsersController(IMapper mapper, IUserRepo userRepo)
         {
-            _dbContext = dbContext;
-            _mapper = mapper;
+            this.mapper = mapper;
+            this.userRepo = userRepo;
         }
 
-        // GET: api/users
+        [HttpPost]
+        [Authorize(Roles = "1")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] UserDTO userDTO)
+        {
+            //Map DTO to domain Model          
+            var user = mapper.Map<User>(userDTO);
+            await userRepo.CreateAsync(user);
+            //Domain Model to DTO
+            return Ok(mapper.Map<UserDTO>(user));
+        }
+
         [HttpGet]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll()
         {
-            var users = await _dbContext.Users.ToListAsync();
-            return Ok(users.Select(user => _mapper.Map<UserDTO>(user)));
+            var user = await userRepo.GetAllAsync();
+
+            return Ok(mapper.Map<List<UserDTO>>(user));
         }
 
-        // GET: api/users/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "1")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUser(int id)
+        //[AllowAnonymous]
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
-
+            var user = await userRepo.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-            var petDTO = _mapper.Map<UserDTO>(user);
-            return Ok(petDTO);
+
+            return Ok(mapper.Map<UserDTO>(user));
         }
 
-        // POST: api/user
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> CreateUser(UserDTO userCreateDTO)
+        [HttpPut("{id}")]
+        [Authorize(Roles = "1")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update([FromRoute] int id, UserDTO userDTO)
         {
-            if (!ModelState.IsValid)
+            var user = mapper.Map<User>(userDTO);
+            user = await userRepo.UpdateAsync(id, user);
+            if (user == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
 
-            var user = _mapper.Map<User>(userCreateDTO);
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-
-            var userDTO = _mapper.Map<UserDTO>(user);
-            return CreatedAtAction(nameof(GetUser), new { id = userDTO.UserID }, userDTO);
+            return Ok(mapper.Map<UserDTO>(user));
         }
 
-        // DELETE: api/users/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "1")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await userRepo.DeleteAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
-
-            _dbContext.Users.Remove(user);
-            await _dbContext.SaveChangesAsync();
 
             return NoContent();
         }

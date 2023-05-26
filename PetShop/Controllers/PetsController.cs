@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
+using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 
 namespace PetShop.Controllers
 {
@@ -12,120 +13,87 @@ namespace PetShop.Controllers
     [Route("api/[controller]")]
     public class PetsController : ControllerBase
     {
-        /*public IActionResult Index()
+        private readonly IMapper mapper;
+        private readonly IPetRepo petRepo;
+       
+        //Creating Constructor
+        public PetsController(IMapper mapper, IPetRepo petRepo)
         {
-            return View();
-        }*/
-        private readonly PetShopDbContext _dbContext;
-        private readonly IMapper _mapper;
-        public PetsController(PetShopDbContext dbContext, IMapper mapper)
-        {
-            _dbContext = dbContext;
-            _mapper = mapper;
+            this.mapper = mapper;
+            this.petRepo = petRepo;
         }
 
-        // GET: api/pets
-        [HttpGet]
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<PetDTO>>> GetPets()
-        {
-            var pets = await _dbContext.Pets.ToListAsync();
-            //return Ok(pets);
-            return Ok(pets.Select(pet => _mapper.Map<PetDTO>(pet)));
-        }
-
-        // GET: api/pets/5
-        [HttpGet("{id}")]
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PetDTO>> GetPet(int id)
-        {
-            var pet = await _dbContext.Pets.FindAsync(id);
-
-            if (pet == null)
-            {
-                return NotFound();
-            }
-            var petDTO = _mapper.Map<PetDTO>(pet);
-            return Ok(petDTO);
-        }
-
-        // POST: api/pets
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "1")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PetDTO>> CreatePet(PetDTO petCreateDTO)
+        public async Task<IActionResult> Create([FromBody] PetDTO petDTO)
         {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var pet = _mapper.Map<Pet>(petCreateDTO);
-            _dbContext.Pets.Add(pet);
-            await _dbContext.SaveChangesAsync();
-
-            var petDTO = _mapper.Map<PetDTO>(pet);
-            return CreatedAtAction(nameof(GetPet), new { id = petDTO.PetID }, petDTO);
+            //Map DTO to domain Model          
+            var pet = mapper.Map<Pet>(petDTO);
+            await petRepo.CreateAsync(pet);
+            //Domain Model to DTO
+            return Ok(mapper.Map<PetDTO>(pet));
         }
 
-        // PUT: api/pets/5
-        [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> UpdatePet(int id, PetDTO petUpdateDTO)
+        [HttpGet]
+        [Authorize(Roles = "1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<PetDTO>>> GetAll()
         {
-            if (id != petUpdateDTO.PetID)
-            {
-                return BadRequest("Pet ID mismatch");
-            }
+            var pet = await petRepo.GetAllAsync();
 
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            return Ok(mapper.Map<List<PetDTO>>(pet));
+        }
 
-            var pet = await _dbContext.Pets.FindAsync(id);
-
+        [HttpGet("{id}")]
+        [Authorize(Roles = "1")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        //[AllowAnonymous]
+        public async Task<IActionResult> GetById([FromRoute] int id)
+        {
+            var pet = await petRepo.GetByIdAsync(id);
             if (pet == null)
             {
                 return NotFound();
             }
 
-            _mapper.Map(petUpdateDTO, pet);
-            await _dbContext.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(mapper.Map<PetDTO>(pet));
         }
 
-        // DELETE: api/pets/5
+        [HttpPut("{id}")]
+        [Authorize(Roles = "1")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update([FromRoute] int id, PetDTO petDTO)
+        {
+            var pet = mapper.Map<Pet>(petDTO);
+            pet = await petRepo.UpdateAsync(id, pet);
+            if (pet == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(mapper.Map<PetDTO>(pet));
+        }
+
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "1")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeletePet(int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var pet = await _dbContext.Pets.FindAsync(id);
+            var pet = await petRepo.DeleteAsync(id);
             if (pet == null)
             {
                 return NotFound();
             }
 
-            _dbContext.Pets.Remove(pet);
-            await _dbContext.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool PetExists(int id)
-        {
-            return _dbContext.Pets.Any(p => p.PetID == id);
         }
     }
 }
