@@ -28,6 +28,11 @@ namespace PetShop.DataAccessLayer.Entities.Repository.Implementation
         {
             return await dbContext.Users.FirstOrDefaultAsync(x => x.UserID == id);
         }
+
+        public async Task<User> GetByEmailAsync(string email)
+        {
+            return await dbContext.Users.Include("Role").FirstOrDefaultAsync(x => x.Email == email);
+        }
         public async Task<User> UpdateAsync(int id, User user)
         {
             var newuser = await dbContext.Users.FirstOrDefaultAsync(x => x.UserID == id);

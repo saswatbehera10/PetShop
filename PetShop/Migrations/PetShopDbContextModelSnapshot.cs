@@ -40,7 +40,7 @@ namespace PetShop.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Pet", b =>
@@ -72,7 +72,7 @@ namespace PetShop.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Pets");
+                    b.ToTable("Pets", (string)null);
 
                     b.HasData(
                         new
@@ -118,7 +118,7 @@ namespace PetShop.Migrations
 
                     b.HasKey("RoleID");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -164,7 +164,7 @@ namespace PetShop.Migrations
 
                     b.HasIndex("RoleID");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new

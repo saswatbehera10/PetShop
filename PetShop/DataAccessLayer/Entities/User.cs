@@ -24,10 +24,9 @@ namespace PetShop.DataAccessLayer.Entities
         [Phone]
         public string Phone { get; set; }
 
-        public virtual ICollection<Pet> Pets { get; set; }
-
         [ForeignKey("Role")]
         public int RoleID { get; set; }
         public virtual Role Role { get; set; }
+        public virtual ICollection<Pet> Pets { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetShop.BusinessLogicLayer.DTO
 {
@@ -13,7 +14,7 @@ namespace PetShop.BusinessLogicLayer.DTO
         [DataType(DataType.Password)]
         public string Password { get; set; }
         public string Phone { get; set; }
-
-        public string Role { get; set; }
+        [ForeignKey("Role")]
+        public int RoleID { get; set; }
     }
 }

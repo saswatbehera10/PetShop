@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using IdentityModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using PetShop.BusinessLogicLayer.DTO;
 using PetShop.DataAccessLayer.Context;
 using PetShop.DataAccessLayer.Entities;
+using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
+using PetShop.Infrastructure;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,73 +17,84 @@ using System.Text;
 
 namespace PetShop.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly PetShopDbContext _dbContext;
-        private readonly IConfiguration _configuration;
-        // private readonly IUserService _userService;
-        // private readonly IPasswordHasher _passwordHasher;
 
-        public AuthController(PetShopDbContext dbcontext, IConfiguration configuration)
+        private PetShopDbContext context;
+        private readonly IConfiguration configuration;
+        private readonly IMapper mapper;
+        private readonly IUserRepo userRepo;
+
+        public AuthController(PetShopDbContext context, IConfiguration configuration, IMapper mapper, IUserRepo userRepo)
         {
-            _dbContext= dbcontext;
-            _configuration = configuration;
-            //_userService = userService;
-            // _passwordHasher = passwordHasher;
-        }
+            this.context = context;
+            this.configuration = configuration;
+            this.mapper = mapper;
+            this.userRepo = userRepo;
 
+        }
+        [Route("login")]
+        [HttpPost]
         [AllowAnonymous]
-        [HttpPost("register")]
-
-        public async Task<IActionResult> Register(UserRegisterDTO userRegisterDTO)
+        public IActionResult Login(UserLoginDTO loginModel)
         {
-            var user = new User
-            {
-                Name = userRegisterDTO.Name,
-                Email = userRegisterDTO.Email,
-                Password = userRegisterDTO.Password,
-                Phone = userRegisterDTO.Phone,
-                RoleID=2,
-            };
-            await _dbContext.Users.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-            return Ok(user);
 
-        }
+            var user = context.Users.FirstOrDefault(x => x.Email == loginModel.Email);
+            var userRole = context.Roles.FirstOrDefault(x => x.RoleID == user.RoleID);
 
-        [HttpPost("login")]
-        public async Task<ActionResult<UserLoginDTO>> Login(UserLoginDTO userLoginDTO)
-        {
-            var user =  await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == userLoginDTO.Email && u.Password == userLoginDTO.Password);
-            if (user == null)
+            if (user is null)
+                return Unauthorized("Invalid Username or Password!");
+
+            string hashedPassword = HashPassword(loginModel.Password);
+            if (BCrypt.Net.BCrypt.Verify(loginModel.Password, hashedPassword))
             {
-                return Unauthorized();
+
+                var token = JWT.GenerateToken(new Dictionary<string, string> {
+                { ClaimTypes.Role, user.Role.RoleName  },
+                { "RoleId", user.Role.RoleID.ToString() },
+                { JwtClaimTypes.PreferredUserName, user.Name },
+                { JwtClaimTypes.Id, user.UserID.ToString() },
+                { JwtClaimTypes.Email, user.Email}
+            }, configuration["JWT:Key"]);
+
+                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name });
             }
-
-            var token = GenerateJwtToken(user);
-
-            return Ok(new { Token = token });
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[]
+            else
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.RoleID.ToString())
-            };
-
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: credentials);
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                return Unauthorized("Invalid Username or Password");
+            }
         }
+        [Route("Registration")]
+        [HttpPost]
+        [AllowAnonymous]
 
+        public async Task<IActionResult> Create([FromBody] UserRegisterDTO userRegisterDTO)
+        {
+
+            // Check if a user with the same email already exists
+            var existingUser = await userRepo.GetByEmailAsync(userRegisterDTO.Email);
+            if (existingUser != null)
+            {
+                // Return an error response indicating that the email is already registered
+                return BadRequest("Email is already registered.");
+            }
+            //Map DTO to Domain Model           
+            var userEntity = mapper.Map<User>(userRegisterDTO);
+            userEntity.Password = HashPassword(userRegisterDTO.Password);
+
+
+
+            await userRepo.CreateAsync(userEntity);
+            var users = mapper.Map<UserDTO>(userEntity);
+
+            return Ok("Registration Successful");
+        }
+        private string HashPassword(string password)
+        {
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            return hashedPassword;
+        }
     }
 }

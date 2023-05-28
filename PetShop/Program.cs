@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using PetShop.DataAccessLayer.Entities.Repository.Implementation;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace PetShop
 {
@@ -22,47 +23,41 @@ namespace PetShop
 
             builder.Services.AddScoped<IPetRepo, PetRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IOrderRepo, OrderRepo>();
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                 {
-                     options.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         ValidateIssuer = false,
-                         ValidateAudience = false,
-                         ValidateLifetime = false,
-                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-                     };
-                 });
-
-            builder.Services.AddSwaggerGen(option =>
+            builder.Services.AddAuthentication(options =>
             {
-                option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
-                option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidIssuer = builder.Configuration["JWT : Issuer"],
+                    ValidAudience = builder.Configuration["JWT : Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration
+                    ["JWT:Key"]))
+                };
+            });
+
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("oauth2", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "Standard Authorization header using the Bearer scheme(\"bearer {token}\")",
                     In = ParameterLocation.Header,
-                    Description = "Please enter a valid token",
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.ApiKey
+
                 });
-                option.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                });
+                options.OperationFilter<SecurityRequirementsOperationFilter>();
             });
 
             builder.Services.AddAuthorization(options =>
@@ -73,6 +68,8 @@ namespace PetShop
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
