@@ -12,6 +12,8 @@ namespace PetShop.BusinessLogicLayer.DTO
         [Required]
         public DateTime OrderDate { get; set; }
 
+        [ForeignKey("Pet")]
+        public int PetID { get; set; }
         [ForeignKey("User")]
         public int UserID { get; set; }
     }

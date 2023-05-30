@@ -23,22 +23,7 @@ namespace PetShop.Controllers
             this.mapper = mapper;
             this.userRepo = userRepo;
         }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin, Customer")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] UserDTO userDTO)
-        {
-            //Map DTO to domain Model          
-            var user = mapper.Map<User>(userDTO);
-            await userRepo.CreateAsync(user);
-            //Domain Model to DTO
-            return Ok(mapper.Map<UserDTO>(user));
-        }
-
+        
         [HttpGet]
         [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]

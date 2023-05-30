@@ -20,8 +20,6 @@ namespace PetShop.DataAccessLayer.Entities
         [Required]
         public decimal Price { get; set; }
 
-        [ForeignKey("User")]
-        public int UserID { get; set; }
-        public virtual User User { get; set; }
+        public virtual Order Order { get; set; }
     }
 }

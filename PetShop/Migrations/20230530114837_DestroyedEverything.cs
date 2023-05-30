@@ -5,10 +5,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PetShop.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class DestroyedEverything : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Pets",
+                columns: table => new
+                {
+                    PetID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Species = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Age = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pets", x => x.PetID);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
@@ -30,8 +46,8 @@ namespace PetShop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<int>(type: "int", nullable: false),
                     RoleID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -52,11 +68,18 @@ namespace PetShop.Migrations
                     OrderID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PetID = table.Column<int>(type: "int", nullable: false),
                     UserID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Orders", x => x.OrderID);
+                    table.ForeignKey(
+                        name: "FK_Orders_Pets_PetID",
+                        column: x => x.PetID,
+                        principalTable: "Pets",
+                        principalColumn: "PetID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Orders_Users_UserID",
                         column: x => x.UserID,
@@ -65,37 +88,49 @@ namespace PetShop.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Pets",
-                columns: table => new
+            migrationBuilder.InsertData(
+                table: "Pets",
+                columns: new[] { "PetID", "Age", "Name", "Price", "Species" },
+                values: new object[,]
                 {
-                    PetID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Species = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Age = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    UserID = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Pets", x => x.PetID);
-                    table.ForeignKey(
-                        name: "FK_Pets_Users_UserID",
-                        column: x => x.UserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID",
-                        onDelete: ReferentialAction.Cascade);
+                    { 5, 201, "haroooory", 220m, "dog" },
+                    { 10, 2, "hooooarry", 220m, "cat" },
+                    { 44, 20, "harry", 20m, "dog" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "RoleID", "RoleName" },
+                values: new object[,]
+                {
+                    { 1, "Admin" },
+                    { 2, "Customer" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "UserID", "Email", "Name", "Password", "Phone", "RoleID" },
+                values: new object[] { 1, "alex@gmail.com", "Alex", "password", "123", 1 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "UserID", "Email", "Name", "Password", "Phone", "RoleID" },
+                values: new object[] { 2, "adamx@gmail.com", "Adam", "password", "123", 2 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "UserID", "Email", "Name", "Password", "Phone", "RoleID" },
+                values: new object[] { 3, "cust@gmail.com", "Cust", "password", "123", 2 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_PetID",
+                table: "Orders",
+                column: "PetID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserID",
                 table: "Orders",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Pets_UserID",
-                table: "Pets",
                 column: "UserID");
 
             migrationBuilder.CreateIndex(

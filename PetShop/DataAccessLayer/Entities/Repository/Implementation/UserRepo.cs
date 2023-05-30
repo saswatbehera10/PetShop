@@ -44,7 +44,7 @@ namespace PetShop.DataAccessLayer.Entities.Repository.Implementation
             newuser.Name = user.Name;
             newuser.Email = user.Email;
             newuser.Phone = user.Phone;
-            newuser.Password = user.Password;
+            newuser.Password = HashPassword(user.Password);
 
             await dbContext.SaveChangesAsync();
             return newuser;
@@ -60,6 +60,11 @@ namespace PetShop.DataAccessLayer.Entities.Repository.Implementation
 
             await dbContext.SaveChangesAsync();
             return user;
+        }
+        private string HashPassword(string password)
+        {
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            return hashedPassword;
         }
     }
 }

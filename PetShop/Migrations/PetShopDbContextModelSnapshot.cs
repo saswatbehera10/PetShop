@@ -33,14 +33,20 @@ namespace PetShop.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PetID")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
                     b.HasKey("OrderID");
 
+                    b.HasIndex("PetID")
+                        .IsUnique();
+
                     b.HasIndex("UserID");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Pet", b =>
@@ -65,14 +71,9 @@ namespace PetShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
                     b.HasKey("PetID");
 
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Pets", (string)null);
+                    b.ToTable("Pets");
 
                     b.HasData(
                         new
@@ -81,8 +82,7 @@ namespace PetShop.Migrations
                             Age = 20,
                             Name = "harry",
                             Price = 20m,
-                            Species = "dog",
-                            UserID = 1
+                            Species = "dog"
                         },
                         new
                         {
@@ -90,8 +90,7 @@ namespace PetShop.Migrations
                             Age = 2,
                             Name = "hooooarry",
                             Price = 220m,
-                            Species = "cat",
-                            UserID = 2
+                            Species = "cat"
                         },
                         new
                         {
@@ -99,8 +98,7 @@ namespace PetShop.Migrations
                             Age = 201,
                             Name = "haroooory",
                             Price = 220m,
-                            Species = "dog",
-                            UserID = 3
+                            Species = "dog"
                         });
                 });
 
@@ -118,7 +116,7 @@ namespace PetShop.Migrations
 
                     b.HasKey("RoleID");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -164,7 +162,7 @@ namespace PetShop.Migrations
 
                     b.HasIndex("RoleID");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
@@ -198,22 +196,19 @@ namespace PetShop.Migrations
 
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Order", b =>
                 {
+                    b.HasOne("PetShop.DataAccessLayer.Entities.Pet", "Pet")
+                        .WithOne("Order")
+                        .HasForeignKey("PetShop.DataAccessLayer.Entities.Order", "PetID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("PetShop.DataAccessLayer.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Pet", b =>
-                {
-                    b.HasOne("PetShop.DataAccessLayer.Entities.User", "User")
-                        .WithMany("Pets")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Pet");
 
                     b.Navigation("User");
                 });
@@ -221,7 +216,7 @@ namespace PetShop.Migrations
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.User", b =>
                 {
                     b.HasOne("PetShop.DataAccessLayer.Entities.Role", "Role")
-                        .WithMany("Users")
+                        .WithMany()
                         .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -229,14 +224,9 @@ namespace PetShop.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Role", b =>
+            modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Pet", b =>
                 {
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("PetShop.DataAccessLayer.Entities.User", b =>
-                {
-                    b.Navigation("Pets");
+                    b.Navigation("Order");
                 });
 #pragma warning restore 612, 618
         }

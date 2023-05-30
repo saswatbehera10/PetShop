@@ -16,13 +16,8 @@ namespace PetShop.DataAccessLayer.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Pet entity configuration
-            modelBuilder.Entity<Pet>()
-                .HasOne(p => p.User)
-                .WithMany(u => u.Pets)
-                .HasForeignKey(p => p.UserID)
-                .OnDelete(DeleteBehavior.Cascade);
 
+            // Pet entity configuration
             modelBuilder.Entity<Pet>().HasData(
                 new Pet()
                 {
@@ -30,8 +25,7 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "harry",
                     Species = "dog",
                     Age = 20,
-                    Price = 20,
-                    UserID = 1
+                    Price = 20
                 },
                 new Pet()
                 {
@@ -39,8 +33,7 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "hooooarry",
                     Species = "cat",
                     Age = 2,
-                    Price = 220,
-                    UserID = 2
+                    Price = 220
                 },
                 new Pet()
                 {
@@ -48,17 +41,10 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "haroooory",
                     Species = "dog",
                     Age = 201,
-                    Price = 220,
-                    UserID = 3
+                    Price = 220
                 });
 
             // User entity configuration
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Role)
-                .WithMany(r => r.Users)
-                .HasForeignKey(u => u.RoleID)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<User>().HasData(
                 new User()
                 {
@@ -92,12 +78,6 @@ namespace PetShop.DataAccessLayer.Context
                 });
 
             // Role entity configuration
-            modelBuilder.Entity<Role>()
-                .HasMany(r => r.Users)
-                .WithOne(u => u.Role)
-                .HasForeignKey(u => u.RoleID)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<Role>().HasData(
                  new Role()
                  {

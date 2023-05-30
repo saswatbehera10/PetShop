@@ -11,8 +11,11 @@ namespace PetShop.DataAccessLayer.Entities
         [Required]
         public DateTime OrderDate { get; set; }
 
+        [ForeignKey("Pet")]
+        public int PetID { get; set; }
         [ForeignKey("User")]
         public int UserID { get; set; }
+        public virtual Pet Pet { get; set; }
         public virtual User User { get; set; }
     }
 }
