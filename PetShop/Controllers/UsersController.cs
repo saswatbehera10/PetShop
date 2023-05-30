@@ -53,7 +53,7 @@ namespace PetShop.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Customer")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
