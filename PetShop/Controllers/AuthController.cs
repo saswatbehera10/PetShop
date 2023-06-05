@@ -59,7 +59,7 @@ namespace PetShop.Controllers
                 { JwtClaimTypes.Email, user.Email}
             }, configuration["JWT:Key"]);
 
-                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name });
+                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name, role = userRole.RoleID });
             }
             else
             {
@@ -70,7 +70,7 @@ namespace PetShop.Controllers
         [HttpPost]
         [AllowAnonymous]
 
-        public async Task<IActionResult> Create([FromBody] UserRegisterDTO userRegisterDTO)
+        public async Task<IActionResult> Create(UserRegisterDTO userRegisterDTO)
         {
 
             // Check if a user with the same email already exists

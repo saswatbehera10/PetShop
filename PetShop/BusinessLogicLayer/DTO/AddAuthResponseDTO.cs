@@ -11,5 +11,6 @@ namespace PetShop.BusinessLogicLayer.DTO
         [StringLength(50, ErrorMessage = "Username must be between 1 and 50 characters.", MinimumLength = 1)]
 
         public string UserName { get; set; }
+        public int role { get; set; }
     }
 }
