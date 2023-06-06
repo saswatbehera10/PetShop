@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using PetShop.DataAccessLayer.Entities.Repository.Interfaces;
 using PetShop.DataAccessLayer.Entities.Repository.Implementation;
 using Swashbuckle.AspNetCore.Filters;
+using System.Text.Json.Serialization;
 
 namespace PetShop
 {
@@ -66,12 +67,15 @@ namespace PetShop
                 options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
             });
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(x =>
+            x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
 
             var app = builder.Build();
 

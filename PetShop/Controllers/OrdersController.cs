@@ -22,22 +22,22 @@ namespace PetShop.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin, Customer")]
+        //[Authorize(Roles = "Admin, Customer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> Create([FromBody] OrderDTO orderDTO)
+        public async Task<IActionResult> Create([FromBody] AddOrderDTO addOrderDTO)
         {
             //Map DTO to domain Model          
-            var order = mapper.Map<Order>(orderDTO);
+            var order = mapper.Map<Order>(addOrderDTO);
             await orderRepo.CreateAsync(order);
             //Domain Model to DTO
-            return Ok(mapper.Map<OrderDTO>(order));
+            return Ok(mapper.Map<AddOrderDTO>(order));
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -89,7 +89,7 @@ namespace PetShop.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

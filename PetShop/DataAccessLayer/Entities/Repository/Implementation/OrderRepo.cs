@@ -21,7 +21,7 @@ namespace PetShop.DataAccessLayer.Entities.Repository.Implementation
 
         public async Task<List<Order>> GetAllAsync()
         {
-            return await dbContext.Orders.ToListAsync();
+            return await dbContext.Orders.Include(x => x.User).ThenInclude(x => x.Role).Include(x=>x.Pet).ToListAsync();
         }
 
         public async Task<Order> GetByIdAsync(int id)

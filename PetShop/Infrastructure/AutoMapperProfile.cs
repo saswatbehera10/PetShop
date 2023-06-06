@@ -14,6 +14,8 @@ namespace PetShop.Infrastructure
             CreateMap<UserDTO, User>();
             CreateMap<OrderDTO, Order>();
             CreateMap<Order, OrderDTO>();
+            CreateMap<Order, AddOrderDTO>();
+            CreateMap<AddOrderDTO, Order>();
             CreateMap<User, UserRegisterDTO>();
             CreateMap<UserRegisterDTO, User>();
         }
