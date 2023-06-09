@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PetShop.DataAccessLayer.Entities;
+using static System.Net.WebRequestMethods;
 
 namespace PetShop.DataAccessLayer.Context
 {
@@ -25,7 +26,8 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "harry",
                     Species = "dog",
                     Age = 20,
-                    Price = 20
+                    Price = 20,
+                    ImgUrl = "https://static.businessinsider.com/image/5484d9d1eab8ea3017b17e29/image.jpg"
                 },
                 new Pet()
                 {
@@ -33,7 +35,8 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "hooooarry",
                     Species = "cat",
                     Age = 2,
-                    Price = 220
+                    Price = 220,
+                    ImgUrl = "https://wallpaperaccess.com/full/275808.jpg"
                 },
                 new Pet()
                 {
@@ -41,7 +44,8 @@ namespace PetShop.DataAccessLayer.Context
                     Name = "haroooory",
                     Species = "dog",
                     Age = 201,
-                    Price = 220
+                    Price = 220,
+                    ImgUrl = "https://scx2.b-cdn.net/gfx/news/hires/2018/2-dog.jpg"
                 });
 
             // User entity configuration

@@ -19,6 +19,8 @@ namespace PetShop.DataAccessLayer.Entities
 
         [Required]
         public decimal Price { get; set; }
+        [Required]
+        public string ImgUrl { get; set; }
 
         public virtual Order Order { get; set; }
     }
