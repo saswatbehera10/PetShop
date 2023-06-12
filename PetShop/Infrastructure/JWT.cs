@@ -11,7 +11,7 @@ namespace PetShop.Infrastructure
         {
             var TokenHandler = new JwtSecurityTokenHandler();
             var TokenKey = Encoding.ASCII.GetBytes(key);
-            var expiresAt = DateTime.Now.AddDays(30);
+            var expiresAt = DateTime.Now.AddMinutes(60);
 
             var claimsIdentity = new ClaimsIdentity();
             foreach (var item in claimsToBeAdded)

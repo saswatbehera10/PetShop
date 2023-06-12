@@ -51,6 +51,7 @@ namespace PetShop.Controllers
             if (BCrypt.Net.BCrypt.Verify(loginModel.Password, hashedPassword))
             {
 
+                int expirationMinutes = int.Parse(configuration["JWT:ExpirationMinutes"]);
                 var token = JWT.GenerateToken(new Dictionary<string, string> {
                 { ClaimTypes.Role, user.Role.RoleName  },
                 { "RoleId", user.Role.RoleID.ToString() },
@@ -59,7 +60,7 @@ namespace PetShop.Controllers
                 { JwtClaimTypes.Email, user.Email}
             }, configuration["JWT:Key"]);
 
-                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name, role = userRole.RoleID });
+                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name, role = userRole.RoleID, expirationMinutes = expirationMinutes });
             }
             else
             {

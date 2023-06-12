@@ -12,5 +12,6 @@ namespace PetShop.BusinessLogicLayer.DTO
 
         public string UserName { get; set; }
         public int role { get; set; }
+        public int expirationMinutes { get; set; }
     }
 }
