@@ -18,6 +18,7 @@ namespace PetShop.Infrastructure
             CreateMap<AddOrderDTO, Order>();
             CreateMap<User, UserRegisterDTO>();
             CreateMap<UserRegisterDTO, User>();
+            CreateMap<PetUpdateDTO, Pet>().ReverseMap();
         }
     }
 }

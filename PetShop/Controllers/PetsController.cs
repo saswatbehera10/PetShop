@@ -78,16 +78,16 @@ namespace PetShop.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update([FromRoute] int id, PetDTO petDTO)
+        public async Task<IActionResult> Update([FromRoute] int id, PetUpdateDTO petUpdateDTO)
         {
-            var pet = mapper.Map<Pet>(petDTO);
+            var pet = mapper.Map<Pet>(petUpdateDTO);
             pet = await petRepo.UpdateAsync(id, pet);
             if (pet == null)
             {
                 return BadRequest();
             }
 
-            return Ok(mapper.Map<PetDTO>(pet));
+            return Ok(mapper.Map<PetUpdateDTO>(pet));
         }
 
         [HttpDelete("{id}")]

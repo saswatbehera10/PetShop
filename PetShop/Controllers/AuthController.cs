@@ -60,7 +60,7 @@ namespace PetShop.Controllers
                 { JwtClaimTypes.Email, user.Email}
             }, configuration["JWT:Key"]);
 
-                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name, role = userRole.RoleID, expirationMinutes = expirationMinutes });
+                return Ok(new AddAuthResponseDTO { token = token, UserName = user.Name, role = userRole.RoleID, expirationMinutes = expirationMinutes, userId = user.UserID });
             }
             else
             {
