@@ -48,7 +48,7 @@ namespace PetShop.Controllers
                 return Unauthorized("Invalid Username or Password!");
 
             string hashedPassword = HashPassword(loginModel.Password);
-            if (BCrypt.Net.BCrypt.Verify(loginModel.Password, hashedPassword))
+            if (BCrypt.Net.BCrypt.Verify(loginModel.Password, user.Password))
             {
 
                 int expirationMinutes = int.Parse(configuration["JWT:ExpirationMinutes"]);
