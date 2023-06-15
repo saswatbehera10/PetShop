@@ -22,6 +22,8 @@ namespace PetShop.DataAccessLayer.Entities
         [Required]
         public string ImgUrl { get; set; }
 
+        public string Status { get; set; }
+
         public virtual Order Order { get; set; }
     }
 }

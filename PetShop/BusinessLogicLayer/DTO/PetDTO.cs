@@ -22,6 +22,7 @@ namespace PetShop.BusinessLogicLayer.DTO
         public decimal Price { get; set; }
         [Required]
         public string ImgUrl { get; set; }
+        public string Status { get; set; }
 
     }
 }

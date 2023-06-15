@@ -41,6 +41,7 @@ namespace PetShop.DataAccessLayer.Entities.Repository.Implementation
             newpet.Age = pet.Age;
             newpet.Price = pet.Price;
             //newpet.ImgUrl = pet.ImgUrl;
+            newpet.Status = pet.Status;
 
 
             await dbContext.SaveChangesAsync();
