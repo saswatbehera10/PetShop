@@ -12,8 +12,8 @@ using PetShop.DataAccessLayer.Context;
 namespace PetShop.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20230609102923_ImgUrl")]
-    partial class ImgUrl
+    [Migration("20230713101652_DestroyedDatabase")]
+    partial class DestroyedDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -77,38 +77,12 @@ namespace PetShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("PetID");
 
                     b.ToTable("Pets");
-
-                    b.HasData(
-                        new
-                        {
-                            PetID = 44,
-                            Age = 20,
-                            ImgUrl = "https://static.businessinsider.com/image/5484d9d1eab8ea3017b17e29/image.jpg",
-                            Name = "harry",
-                            Price = 20m,
-                            Species = "dog"
-                        },
-                        new
-                        {
-                            PetID = 10,
-                            Age = 2,
-                            ImgUrl = "https://wallpaperaccess.com/full/275808.jpg",
-                            Name = "hooooarry",
-                            Price = 220m,
-                            Species = "cat"
-                        },
-                        new
-                        {
-                            PetID = 5,
-                            Age = 201,
-                            ImgUrl = "https://scx2.b-cdn.net/gfx/news/hires/2018/2-dog.jpg",
-                            Name = "haroooory",
-                            Price = 220m,
-                            Species = "dog"
-                        });
                 });
 
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Role", b =>
@@ -172,35 +146,6 @@ namespace PetShop.Migrations
                     b.HasIndex("RoleID");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserID = 1,
-                            Email = "alex@gmail.com",
-                            Name = "Alex",
-                            Password = "password",
-                            Phone = "123",
-                            RoleID = 1
-                        },
-                        new
-                        {
-                            UserID = 2,
-                            Email = "adamx@gmail.com",
-                            Name = "Adam",
-                            Password = "password",
-                            Phone = "123",
-                            RoleID = 2
-                        },
-                        new
-                        {
-                            UserID = 3,
-                            Email = "cust@gmail.com",
-                            Name = "Cust",
-                            Password = "password",
-                            Phone = "123",
-                            RoleID = 2
-                        });
                 });
 
             modelBuilder.Entity("PetShop.DataAccessLayer.Entities.Order", b =>

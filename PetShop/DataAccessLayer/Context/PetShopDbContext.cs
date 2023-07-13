@@ -19,7 +19,7 @@ namespace PetShop.DataAccessLayer.Context
         {
 
             // Pet entity configuration
-            modelBuilder.Entity<Pet>().HasData(
+            /*modelBuilder.Entity<Pet>().HasData(
                 new Pet()
                 {
                     PetID = 44,
@@ -79,7 +79,7 @@ namespace PetShop.DataAccessLayer.Context
                    // PasswordHash = "String",
                     Phone = "123",
                     RoleID = 2
-                });
+                });*/
 
             // Role entity configuration
             modelBuilder.Entity<Role>().HasData(

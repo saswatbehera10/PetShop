@@ -12,8 +12,8 @@ using PetShop.DataAccessLayer.Context;
 namespace PetShop.Migrations
 {
     [DbContext(typeof(PetShopDbContext))]
-    [Migration("20230615100237_PetStatus")]
-    partial class PetStatus
+    [Migration("20230713100906_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

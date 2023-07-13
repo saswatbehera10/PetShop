@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PetShop.Migrations
 {
-    public partial class DestroyedEverything : Migration
+    public partial class initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -18,7 +18,9 @@ namespace PetShop.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Species = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Age = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false)
+                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    ImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -90,12 +92,12 @@ namespace PetShop.Migrations
 
             migrationBuilder.InsertData(
                 table: "Pets",
-                columns: new[] { "PetID", "Age", "Name", "Price", "Species" },
+                columns: new[] { "PetID", "Age", "ImgUrl", "Name", "Price", "Species", "Status" },
                 values: new object[,]
                 {
-                    { 5, 201, "haroooory", 220m, "dog" },
-                    { 10, 2, "hooooarry", 220m, "cat" },
-                    { 44, 20, "harry", 20m, "dog" }
+                    { 5, 201, "https://scx2.b-cdn.net/gfx/news/hires/2018/2-dog.jpg", "haroooory", 220m, "dog", null },
+                    { 10, 2, "https://wallpaperaccess.com/full/275808.jpg", "hooooarry", 220m, "cat", null },
+                    { 44, 20, "https://static.businessinsider.com/image/5484d9d1eab8ea3017b17e29/image.jpg", "harry", 20m, "dog", null }
                 });
 
             migrationBuilder.InsertData(
